@@ -37,6 +37,7 @@ class Restaurant:
     
     # 2- Updating an existing menu item
     def update_item(self,item):
+
         if item not in self.menu_items:
             print("Item not found.")
             return
@@ -75,6 +76,7 @@ class Restaurant:
         
     # 3- Removing an item from the menu
     def remove_item(self,item):
+
         if item in self.customer_orders:
             print("This item is in use and can't be removed.") # Because it's in use
         else:
@@ -109,33 +111,50 @@ class Restaurant:
                 print(f"{item}: {details["price"]}da, Season: {details["season"]}")
             
 
-    # -----------------------Booking tables----------------------------
+    # -----------------------Tables----------------------------
 
-    def book_tables(self,table_nbr,customer_name):
-        if table_nbr not in self.book_table:
-            self.book_table[table_nbr] = customer_name
-            print(f"Table {table_nbr} booked successfully.")
-        else:
+    #1- Booking tables or pushing to waitlist if the table is already booked
+    def book_tables(self,table_nbr):
+
+        if table_nbr not in self.book_table: # If the table is available
+            while True:
+                customer_name = input("Enter your name: ").strip()
+                if customer_name != "": # Checking that the name is not empty
+                    self.book_table[table_nbr] = customer_name
+                    print(f"Table {table_nbr} booked successfully under the name {customer_name}.")
+                    break
+
+                else:
+                    print("Enter a valid name.")
+
+        else: # If the table is booked, push to waitlist
             self.waitlist.append((table_nbr,customer_name))
             print(f"Table {table_nbr} already booked. You are now on the waitlist")
 
-    def cancel_table(self, table_nbr,customer_name):
-        if table_nbr in self.book_table:
+    #2- Cancelling a booked table
+    def cancel_table(self,customer_name,table_nbr):
+
+        # Checking for the name first, cancelling if available
+        if customer_name in self.book_table.values():
             self.book_table.pop(table_nbr)
             print("Reservation cancelled.")
-            if any(t[0] == table_nbr for t in self.waitlist):
+
+            # If any demands for that table match in the waitlist, push to booked tables
+            if any(t[0] == table_nbr for t in self.waitlist): 
                 self.book_tables[self.waitlist[0][0]] = self.waitlist[0][1]
                 self.waitlist.remove((table_nbr,customer_name))
         else:
-            print("This table isn't booked.")
+            print("Sorry, you haven't made a reservation.") 
 
+
+    #3- Printing all reservations
     def print_table_reservations(self):
         print("Booked tables:")
         if self.book_table:
             for table_nbr in self.book_table:
                 print(f"Table {table_nbr} booked by {self.book_table[table_nbr]}.")
         else:
-            print("No reservations yet.")
+            print("No reservations yet.") # If empty
 
     # Orders
     def customer_order(self,order,table_nbr):
@@ -175,11 +194,10 @@ customer_options = {
     "A" : my_restaurant.display_menu,
     "B" : lambda: my_restaurant.book_tables(
         int(input("Enter table number: ")),
-        input("Enter your name: ").strip()
     ),
     "C" : lambda: my_restaurant.cancel_table(
-        int(input("Enter table number: ")),
-        input("Enter your name: ").strip()
+        input("Enter your name: ").strip(),
+        int(input("Enter table number: "))
     ),
     "D" : lambda: my_restaurant.customer_order(
         input("Enter order: ").strip(),

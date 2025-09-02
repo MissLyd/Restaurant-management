@@ -294,6 +294,45 @@ class Restaurant:
             print(f"{item}:{data["qty"]} sold,{data["revenue"]} DA")
         print(f"Grand total: {grand_total} DA")
             
+    # ------------------------------------------------Rating------------------------------------------------
+    def average_per_item(self):
+
+        # If the list of orders is empty
+        if not self.customer_orders:
+            print("No orders yet.")
+            return
+        
+        # averages = {item:{
+        #                   "total_rating":X, 
+        #                   "count": Y
+        #                }
+        #           }
+        averages={}
+
+        for order in self.customer_orders:
+            rating=order.get('rating')
+            # Ignoring orders without rating
+            if rating is None:
+                continue
+            
+            for item,qty in order["items"]:
+                # If the item is not already in averages, initializing it to 0
+                if item not in averages:
+                    averages[item]={"total_rating": 0,"count":0}
+            
+            #Updating rating and order count
+            averages[item]["total_rating"]+=rating
+            averages[item]["count"]+=1
+
+        print("Average rating by item")
+        for item,data in averages.items():
+            # To avoid dividing by 0
+            if data["count"]>0:
+                avg=data["total_rating"]/data["count"]
+            else:
+                avg=0
+                print(f"{item}: {avg:.2f}")
+
 # ------------------------------------------------Main------------------------------------------------
 
 def show_options(menu_options,choice):
@@ -340,6 +379,8 @@ employee_options = {
     ),
     "D": my_restaurant.print_table_reservations,
     "E": my_restaurant.print_orders,
+    "F":my_restaurant.sales_report,
+    "G":my_restaurant.average_per_item
 
 }
 
@@ -368,6 +409,8 @@ while True:
             print("C- Remove item")
             print("D- Show table reservations")
             print("E- Show orders")
+            print("F- Show sales report")
+            print("G- Show average per item list")
             print("0- Exit")
 
             choice = input("Enter you choice: ")
